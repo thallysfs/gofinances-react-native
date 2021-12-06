@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState } from 'react'
 import { 
   Modal, 
   TouchableWithoutFeedback, 
@@ -8,11 +8,13 @@ import {
 
 import * as Yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import uuid from 'react-native-uuid'
 
 import { useForm } from 'react-hook-form'
+import { useNavigation, NavigationProp, ParamListBase } from '@react-navigation/native'
 
 import { Button } from '../../Components/Form/Button'
-import { Input } from '../../Components/Form/Input'
 import { InputForm } from '../../Components/Form/InputForm'
 import { TransactionTypeButton } from '../../Components/Form/TransactionTypeButton'
 import { CategorySelectButton } from '../../Components/Form/CategorySelectButton'
@@ -56,15 +58,18 @@ export function Register(){
     name: 'Categoria',
   });
 
+  const { navigate }: NavigationProp<ParamListBase> = useNavigation();
+
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors }
   } = useForm({
     resolver: yupResolver(schema)
   });
 
-  function handleTransactionTypeSelect(type: 'up' | 'down' ){
+  function handleTransactionTypeSelect(type: 'positive' | 'negative' ){
     setTransactionType(type);
   }
   
@@ -76,7 +81,7 @@ export function Register(){
     setCategoryModalOpen(false);
   }
 
-  function handleRegister(form: FormData){
+  async function handleRegister(form: FormData){
     if(!transactionType)
       return Alert.alert('Selecione o tipo da transação');
     
@@ -84,15 +89,58 @@ export function Register(){
       return Alert.alert('Selecione a categoria');
 
 
-    const data = {
+    const newTransaction = {
+      id: String(uuid.v4()),
       name: form.name,
       amount: form.amount,
-      transactionType,
-      category: category.key
+      type: transactionType,
+      category: category.key,
+      date: new Date()
     }
-    console.log(data);
+    
+    try {
+      const dataKey = '@gofinance:transections';
+      
+      const data = await AsyncStorage.getItem(dataKey);
+      const currentData = data ? JSON.parse(data) : [];
+
+      const dataFormated = [
+        ...currentData,
+        newTransaction
+      ]
+
+      //salvando dados na Storage
+      await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormated));
+
+      //limpando os campos
+      // o reset faz parte do React Root form e ele apaga os inputs envolvidos pelo hook form
+      reset();
+      setTransactionType('');
+      setCategory({
+        key: 'category',
+        name: 'Categoria'
+      });
+
+      //redirecionar
+      navigate('Listagem');
+
+      
+    } catch (error) {
+      console.log(error);
+      Alert.alert('Não foi possível salvar');
+    }
   }
 
+  // useEffect(()=>{
+  //   async function loadData(){
+  //     const data = await AsyncStorage.getItem(dataKey);
+  //     // o uso da exclamação serve para forçar o js aceitar que uma variável não virá nula
+  //     console.log(JSON.parse(data!));
+  //   }
+
+  //     loadData();
+  //   },[])
+    
   return(
     /* serve para fechar o teclado ao clicar fora na tela, necessário colocar a função do
      keyboar.dismiss no onPress desse cara
@@ -127,14 +175,14 @@ export function Register(){
               <TransactionTypeButton 
                 type='up'
                 title='Income'
-                onPress={() => handleTransactionTypeSelect('up')}
-                isActive={transactionType === 'up'}
+                onPress={() => handleTransactionTypeSelect('positive')}
+                isActive={transactionType === 'positive'}
               />          
               <TransactionTypeButton 
                 type='down'
                 title='Outcome'
-                onPress={ () => handleTransactionTypeSelect('down')}
-                isActive={transactionType === 'down'}
+                onPress={ () => handleTransactionTypeSelect('negative')}
+                isActive={transactionType === 'negative'}
               />
             </TransactionsTypes>
 
