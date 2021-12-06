@@ -33,6 +33,8 @@ export interface DataListProps extends TransactionCardProps {
 
 interface HighLigthProps {
   amount: string;
+  lastTransaction: string;
+
 }
 
 interface HighlightData {
@@ -46,6 +48,20 @@ interface HighlightData {
 export function Dashboard(){
   const [transactions, setTransactions] = useState<DataListProps[]>();
   const [highlightData, setHighlightData] = useState<HighlightData>({} as HighlightData);
+
+  function getLastTransactionDate(collection: DataListProps[], type: 'positive' | 'negative'){
+    //pegando a data da última transação
+    //filtrando somente entradas e percorrendo para prgar somente a data
+    //Math.max usado para ver o número maior, pois ocnverto a data em número, número maior = data mais recente
+    const lastTransaction = new Date(
+        Math.max.apply(Math, collection
+        .filter(transaction => transaction.type === type)
+        .map(transaction => new Date(transaction.date).getTime()))
+      )
+      
+      //formatando para exibir o mês escrito
+      return `${lastTransaction.getDate()} de ${lastTransaction.toLocaleDateString('pt-BR',{ month: 'long'})}`;
+  }
 
   async function loadTransactions(){
     const dataKey = '@gofinance:transections';
@@ -91,38 +107,38 @@ export function Dashboard(){
 
     const total = entriesTotal - expensiveTotal; 
 
+
+    const lastTransactionEntries = getLastTransactionDate(transactions, 'positive');
+    const lastTransactionExpensives = getLastTransactionDate(transactions, 'negative');
+    const totalInterval = `01 a ${lastTransactionExpensives}`;
+   
+
     setHighlightData({
       entries: {
         amount: entriesTotal.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL'
-        })
+        }),
+        lastTransaction: `Última entrada dia ${lastTransactionEntries}`
       },
       expensives: {
         amount: expensiveTotal.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL'
-        })
+        }),
+        lastTransaction: `Última saída dia ${lastTransactionExpensives}`
       },
       total: {
         amount: total.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL'
-        })
+        }),
+        lastTransaction: totalInterval
       }
 
     });
 
     setTransactions(transactionsFormatted);
-
-    //pegando a data da última transação
-    //filtrando somente entradas e percorrendo para prgar somente a data
-    //Math.max usado para ver o número maior, pois ocnverto a data em número, número maior = data mais recente
-    const lastTransactionsEntries = Math.max.apply(Math, transactions
-      .filter( ( transaction : DataListProps)  => transaction.type === 'positive')
-      .map((transaction : DataListProps) => new Date(transaction.date).getTime())  
-    )
-
 
 
   }
@@ -161,19 +177,19 @@ export function Dashboard(){
         <HighLightCard 
           title="Entradas" 
           amount={highlightData?.entries?.amount}
-          lastTransaction="Última entrada de 13 de abril"
+          lastTransaction={highlightData?.entries?.lastTransaction}
           type="up"
         />
         <HighLightCard 
           title="Saídas" 
           amount={highlightData?.expensives?.amount}
-          lastTransaction="Última entrada de 3 de abril "
+          lastTransaction={highlightData?.expensives?.lastTransaction}
           type="down"
         /> 
         <HighLightCard 
           title="Total" 
           amount={highlightData?.total?.amount} 
-          lastTransaction="01 a 16 de Abril"
+          lastTransaction={highlightData?.total?.lastTransaction}
           type="total"
         />
       </HighLightCards>
