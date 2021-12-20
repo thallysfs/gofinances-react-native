@@ -3,6 +3,7 @@ import { getBottomSpace } from 'react-native-iphone-x-helper';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { useFocusEffect } from '@react-navigation/native'
+import { useAuth } from '../../hooks/auth';
 
 import { HighLightCard }   from '../../Components/HighLightCard'
 import { TransactionCard, TransactionCardProps } from '../../Components/TransactionCard'
@@ -48,6 +49,8 @@ interface HighlightData {
 export function Dashboard(){
   const [transactions, setTransactions] = useState<DataListProps[]>();
   const [highlightData, setHighlightData] = useState<HighlightData>({} as HighlightData);
+
+  const { signOut } = useAuth();
 
   function getLastTransactionDate(collection: DataListProps[], type: 'positive' | 'negative'){
     //pegando a data da última transação
@@ -167,7 +170,7 @@ export function Dashboard(){
           </User>
         </UserInfo>
         
-        <LogoutButton onPress={() => {}}>
+        <LogoutButton onPress={signOut}>
           <Icon name="power" />
         </LogoutButton>
         </UserWrapper>  
