@@ -17,11 +17,8 @@ import {
 import theme from './src/global/styles/theme'
 
 import { Routes } from './src/routes'
-import { AppRoutes } from './src/routes/app.routes'
 
-import { SignIn } from './src/screens/SignIn'
-
-import { AuthProvider } from './src/hooks/auth'
+import { AuthProvider, useAuth } from './src/hooks/auth'
 
 
 export default function App() {
@@ -31,8 +28,10 @@ export default function App() {
     Poppins_700Bold
   })
 
-  //se as fonts não estiverem carregadas, a tela de splah continua sendo exibida
-  if(!fontsLoaded){
+  const { userStorageLoading } = useAuth();
+
+  //se as fonts não estiverem carregadas, a tela de splah continua sendo exibida ou o usuário estiver carregando
+  if(!fontsLoaded || userStorageLoading){
     return <AppLoading />
   }
 

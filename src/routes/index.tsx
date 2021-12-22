@@ -14,7 +14,7 @@ export function Routes(){
     return(
         <NavigationContainer>
             {/* condicional para saber se está autenticado */}
-            { user ? <AppRoutes /> : <AuthRoutes />}
+            {user.id ? <AppRoutes /> : <AuthRoutes />}
         </NavigationContainer>
     )
 } 

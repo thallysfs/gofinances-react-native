@@ -26,6 +26,7 @@ import {
 
 } from './styles'
 import { useFocusEffect } from '@react-navigation/native';
+import { useAuth } from '../../hooks/auth';
 
 interface TransactionData {
     type: 'positive' | 'negative';
@@ -50,6 +51,7 @@ export function Resume(){
     const [totalByCategories, setTotalByCategories] = useState<CategoryData[]>([]);
 
     const theme = useTheme();
+    const { user } = useAuth();
 
     //função para o filtro da data
     function handleDateChange(action: 'next' | 'prev'){
@@ -64,7 +66,7 @@ export function Resume(){
     async function loadData(){
         setIsLoading(true);
 
-        const dataKey = '@gofinance:transections';
+        const dataKey = `@gofinance:transactions_user:${user.id}`;
         const response = await AsyncStorage.getItem(dataKey);
         const responseFormatted = response ? JSON.parse(response) : [];
 

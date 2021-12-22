@@ -50,9 +50,12 @@ export function Dashboard(){
   const [transactions, setTransactions] = useState<DataListProps[]>();
   const [highlightData, setHighlightData] = useState<HighlightData>({} as HighlightData);
 
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   function getLastTransactionDate(collection: DataListProps[], type: 'positive' | 'negative'){
+
+    //vídeo parou 1:24 !!!!!!!!!!!!!!!!!!
+
     //pegando a data da última transação
     //filtrando somente entradas e percorrendo para prgar somente a data
     //Math.max usado para ver o número maior, pois ocnverto a data em número, número maior = data mais recente
@@ -67,7 +70,7 @@ export function Dashboard(){
   }
 
   async function loadTransactions(){
-    const dataKey = '@gofinance:transections';
+    const dataKey = `@gofinance:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
 
@@ -162,11 +165,11 @@ export function Dashboard(){
       <Header>
         <UserWrapper>
         <UserInfo>
-          <Photo source={{ uri: 'https://avatars.githubusercontent.com/u/50297870?v=4'}} 
+          <Photo source={{ uri: user.photo }} 
           />
           <User>
             <UserGreeting>Olá</UserGreeting>
-            <UserName>Thallys</UserName>
+            <UserName>{user.name}</UserName>
           </User>
         </UserInfo>
         
