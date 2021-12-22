@@ -54,14 +54,19 @@ export function Dashboard(){
 
   function getLastTransactionDate(collection: DataListProps[], type: 'positive' | 'negative'){
 
-    //vídeo parou 1:24 !!!!!!!!!!!!!!!!!!
+    // filtrando a coleção pelo mesmo tipo recebido pelo parâmetro da função
+    const collectionFilttered = collection
+      .filter(transaction => transaction.type === type);
+
+      if(collectionFilttered.length === 0){
+        return 0;
+      }
 
     //pegando a data da última transação
     //filtrando somente entradas e percorrendo para prgar somente a data
     //Math.max usado para ver o número maior, pois ocnverto a data em número, número maior = data mais recente
     const lastTransaction = new Date(
-        Math.max.apply(Math, collection
-        .filter(transaction => transaction.type === type)
+        Math.max.apply(Math, collectionFilttered
         .map(transaction => new Date(transaction.date).getTime()))
       )
       
@@ -116,7 +121,7 @@ export function Dashboard(){
 
     const lastTransactionEntries = getLastTransactionDate(transactions, 'positive');
     const lastTransactionExpensives = getLastTransactionDate(transactions, 'negative');
-    const totalInterval = `01 a ${lastTransactionExpensives}`;
+    const totalInterval = lastTransactionExpensives === 0 ? 'Não há transações' : `01 a ${lastTransactionExpensives}`;
    
 
     setHighlightData({
@@ -125,14 +130,16 @@ export function Dashboard(){
           style: 'currency',
           currency: 'BRL'
         }),
-        lastTransaction: `Última entrada dia ${lastTransactionEntries}`
+        lastTransaction: lastTransactionEntries === 0 ? 'Não há transações' 
+          : `Última entrada dia ${lastTransactionEntries}`
       },
       expensives: {
         amount: expensiveTotal.toLocaleString('pt-BR', {
           style: 'currency',
           currency: 'BRL'
         }),
-        lastTransaction: `Última saída dia ${lastTransactionExpensives}`
+        lastTransaction: lastTransactionExpensives === 0 ? 'Não há transações' 
+          :`Última saída dia ${lastTransactionExpensives}`
       },
       total: {
         amount: total.toLocaleString('pt-BR', {
